@@ -6,30 +6,25 @@ public class Evaluador {
 
 	public static void main(String[] args) {
 
-		String[] a = {"100 * ( 2 + 12 ) / 14", "+","100 * ( 2 + 12 )"};
+		String[] a = {"100 * ( 2 + 12 ) / 14", "*","(30 / 6)"};
 
 		System.out.println(Evaluador.evaluar(a));
-
 	}
-
+	
 	public static int evaluar(String[] arreglo) {
 
 		// tomamos la primera expresion del arreglo
 		String expresion = arreglo[0];
-		String expresion2=arreglo[2];
 
 		// convertimos la expresion en arreglo de char
 		char[] valores = expresion.toCharArray();
-		char[] valores2= expresion2.toCharArray();
 
 		// pila para los numeros y sus respctivas operaciones
 		Stack<Integer> numeros = new Stack<Integer>();
-		Stack<Integer> numeros2 = new Stack<Integer>();
 
 
 		// pila para los simbolos
 		Stack<Character> simbolos = new Stack<Character>();
-		Stack<Character> simbolos2 = new Stack<Character>();
 
 
 		for (int i = 0; i < valores.length ; i++) {
@@ -81,13 +76,77 @@ public class Evaluador {
 
 		int a = 0;
 
-		while (!simbolos.empty())
+		while (!simbolos.empty()) {
 			numeros.push(aplicarOperacion(simbolos.pop(), numeros.pop(), numeros.pop()));
-
-		a = numeros.pop();
-		return a;
+		}
 		
-				
+		//obtenemos el valor de la primera expresion
+		a = numeros.pop();
+		System.out.println(a);
+		
+		
+		//repetimos en procedimiento para la segunda expresion
+		String expresion2=arreglo[2];
+		char[] valores2 = expresion2.toCharArray();
+		
+		Stack<Integer> numeros2 = new Stack<Integer>();
+		Stack<Character> simbolos2 = new Stack<Character>();
+
+
+		for (int i = 0; i < valores2.length ; i++) {
+
+			if (valores2[i] == ' ')
+				continue;
+
+			if (valores2[i] >= '0' && valores2[i] <= '9') {
+
+				StringBuffer sbuf2 = new StringBuffer();
+
+				while (i < valores2.length && valores2[i] >= '0' && valores2[i] <= '9')
+					sbuf2.append(valores2[i++]);
+				numeros2.push(Integer.parseInt(sbuf2.toString()));
+
+				i--;
+			}
+
+
+			else if (valores2[i] == '(')
+				simbolos2.push(valores2[i]);
+
+
+			else if (valores2[i] == ')') {
+				while (simbolos2.peek() != '(')
+					numeros2.push(aplicarOperacion(simbolos2.pop(), numeros2.pop(), numeros2.pop()));
+				simbolos2.pop();
+			}
+
+			else if (valores2[i] == '+' || valores2[i] == '-' || valores2[i] == '*' || valores2[i] == '/') {
+
+
+				while (!simbolos2.empty() && tienePrecedencia(valores2[i], simbolos2.peek()))
+					numeros2.push(aplicarOperacion(simbolos2.pop(), numeros2.pop(), numeros2.pop()));
+
+				simbolos2.push(valores2[i]);
+			}
+		}
+
+		while (!simbolos2.empty()) {
+			numeros2.push(aplicarOperacion(simbolos2.pop(), numeros2.pop(), numeros2.pop()));
+		}
+
+		//obtenemos el valor de la segunda expresion
+		int b = numeros2.pop();
+		
+		System.out.println(b);
+		
+		//obtenemos el operador principal
+		char[] c = arreglo[1].toCharArray();
+
+		//obtenemos el resultado final
+		int res= Evaluador.aplicarOperacion(c[0],a, b);
+		
+		return res;
+
 	}
 
 	// metodo que valida precedencia
